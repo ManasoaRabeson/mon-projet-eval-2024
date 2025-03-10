@@ -73,12 +73,22 @@ class AdminController extends Controller
         $etudiants = Etudiants::all();
         $semestre = new Matieres();
         $data = $semestre->getSemestre();
-
+        $table = $this->admis_et_non_admins($etudiants,$data,$limit_ajour);
+        return view('admin.table_de_bord',
+            [
+                'nbr_etudiant'=>$table['nbr_etudiant'],
+                'nbr_tsy_afaka'=>$table['tsy_afaka'],
+                'nbr_afaka'=>$table['afaka'],
+                'admis'=>$table['admis'],
+                'non_admis'=>$table['non_admis']
+            ]);
+    }
+    public function admis_et_non_admins($etudiants,$data,$limit_ajour){
         $nbr_etudiant = 0;
         $nbr_afaka = 0;
         $nbr_tsy_afaka = 0;
-        $admis = [];
-        $nom_admis = [];
+        $tableau = [];
+        $resultat = [];
 
         foreach ($etudiants as $e){
             $echec = 0;
@@ -114,26 +124,22 @@ class AdminController extends Controller
             if ($total_credit == 180)
             {
                 $nbr_afaka ++;
-                $admis []= $e ;
+                $resultat['admis']= $e ;
             }
             elseif($total_credit < 180)
             {
                 $nbr_tsy_afaka = $nbr_tsy_afaka +1 ;
-                    $nom_admis[] = $e;
+                    $resultat['non_admis'] = $e;
             }
             $nbr_etudiant = $nbr_etudiant +1;
         }
-
-        return view('admin.table_de_bord',
-            [
-                'nbr_etudiant'=>$nbr_etudiant,
-                'nbr_tsy_afaka'=>$nbr_tsy_afaka,
-                'nbr_afaka'=>$nbr_afaka,
-                'admis'=>$admis,
-                'non_admis'=>$nom_admis
-            ]);
-
-
+        $tableau['afaka'] = $nbr_afaka;
+        $tableau['tsy_afaka'] = $nbr_tsy_afaka;
+        $tableau['admis'] = $resultat['admis'];
+        $tableau['non_admis'] = $resultat['non_admis'];
+        $tableau['nbr_etudiant'] = $nbr_etudiant;
+        
+      return $tableau;
     }
     public function listeAnnee($id){
 
