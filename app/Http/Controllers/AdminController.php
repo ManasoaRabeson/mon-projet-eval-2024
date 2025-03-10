@@ -8,6 +8,7 @@ use App\Models\Notes;
 use Carbon\Carbon;
 use App\Models\Promotion;
 use App\Models\Semestre;
+use App\Models\Tableau_de_bord;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -35,12 +36,10 @@ class AdminController extends Controller
                 'etudiant_id' => $Etudiants->id_etudiant,
                 'matiere_id' => $matiere->id_matiere,
                 'note'=>$notes
-
             ]);
             return redirect()->intended('Admin/formNote')->with('success','note bien ajoute');
         }
         return redirect()->intended('Admin/formNote')->with('error','verifiez etudiant ou matiere');
-
     }
     public function getListeEtudiants(Request $request )
     {
@@ -73,7 +72,8 @@ class AdminController extends Controller
         $etudiants = Etudiants::all();
         $semestre = new Matieres();
         $data = $semestre->getSemestre();
-        $table = $this->admis_et_non_admins($etudiants,$data,$limit_ajour);
+        $tableau_de_bord = new Tableau_de_bord();
+        $table = $tableau_de_bord->admis_et_non_admins($etudiants,$data,$limit_ajour);
         return view('admin.table_de_bord',
             [
                 'nbr_etudiant'=>$table['nbr_etudiant'],
@@ -83,66 +83,8 @@ class AdminController extends Controller
                 'non_admis'=>$table['non_admis']
             ]);
     }
-    public function admis_et_non_admins($etudiants,$data,$limit_ajour){
-        $nbr_etudiant = 0;
-        $nbr_afaka = 0;
-        $nbr_tsy_afaka = 0;
-        $tableau = [];
-        $resultat = [];
 
-        foreach ($etudiants as $e){
-            $echec = 0;
-            $valide = 0;
-            $total_credit = 0;
-            foreach ($data as  $d){
-                $datasemestre =  DB::select('Select * from v_note_general where id_semestre = ? and  etudiant_id = ? ',[$d->id,$e->id_etudiant]) ;
-                $notes = 0;
-                $credit = 0;
-                $nb_ajournee = 0;
-                $credit_obtenu =0;
-                foreach ($datasemestre as $ds )
-                {
-                $credit_obtenu = $credit_obtenu +$ds->credit_obtenu;
-                 $notes =$notes +  $ds->note * $ds->credit;
-                 $credit = $credit + $ds->credit;
-                    if ($ds->note < 10){
-                        $nb_ajournee = $nb_ajournee +1 ;
-                    }
-                    if ($ds->note < 6)
-                    {
-                        $echec++;
-                    }
-                }
-                $moyen  = $credit ?  $notes /$credit : 0;
-                if ($moyen >= 10 && $nb_ajournee <= $limit_ajour && $echec == 0)
-                {
-                    $credit_obtenu = $credit;
-                 }
-                $total_credit =   $total_credit + $credit_obtenu;
-            }
-
-            if ($total_credit == 180)
-            {
-                $nbr_afaka ++;
-                $resultat['admis']= $e ;
-            }
-            elseif($total_credit < 180)
-            {
-                $nbr_tsy_afaka = $nbr_tsy_afaka +1 ;
-                    $resultat['non_admis'] = $e;
-            }
-            $nbr_etudiant = $nbr_etudiant +1;
-        }
-        $tableau['afaka'] = $nbr_afaka;
-        $tableau['tsy_afaka'] = $nbr_tsy_afaka;
-        $tableau['admis'] = $resultat['admis'];
-        $tableau['non_admis'] = $resultat['non_admis'];
-        $tableau['nbr_etudiant'] = $nbr_etudiant;
-        
-      return $tableau;
-    }
     public function listeAnnee($id){
-
         return view('admin.liste_annee',['id_etudiant'=>$id]);
     }
     public function listeNoteParAnnee($id,$annee)
