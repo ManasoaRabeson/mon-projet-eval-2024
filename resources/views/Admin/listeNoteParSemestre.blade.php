@@ -25,7 +25,7 @@
                     </tr>
                     </thead>
                     <tbody class="table-border-bottom-0">
-                        @foreach ($note as $n)
+                        @foreach ($note['data'] as $n)
 
                             <tr>
                                 <td>{{$n->code}}</td>
@@ -38,21 +38,21 @@
                         @endforeach
                         <tr>
                             <td></td>
-                            <td>Semestre {{$semestre}}</td>
-                            <td>{{$credit}}</td>
-                            <td>{{number_format($moyen, 2, ',', ' ')}}</td>
+                            <td>Semestre {{$note['semestre']}}</td>
+                            <td>{{$note['credit_obtenu']}}</td>
+                            <td>{{number_format($note['moyen'], 2, ',', ' ')}}</td>
                             <td></td>
                         </tr>
 
 
                     </tbody>
                 </table>
-                <p>Resultat : <br>credit :{{$credit}}
-                <br> Moyenne generale : {{number_format($moyen, 2, ',', ' ')}}
+                <p>Resultat : <br>credit :{{$note['credit_obtenu']}}
+                <br> Moyenne generale : {{number_format($note['moyen'], 2, ',', ' ')}}
                     <br>
-                    Mention : {{$mention}}
+                    Mention : {{$note['mention']}}
                     <br>
-                    @if($moyen<10) Ajourne @else Admis
+                    @if($note['moyen']<10) Ajourne @else Admis
                     @endif
 
                 </p>
